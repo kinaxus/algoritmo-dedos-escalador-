@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dedo del Escalador — Planilla Dx</title>
+<style>
+  :root{
+    --bg:#1c1a17;
+    --panel:#242019;
+    --line:#3a3427;
+    --chalk:#e8e2d4;
+    --chalk-dim:#a89f8c;
+    --hold:#c98a3a;   /* presa - naranja piedra */
+    --crimp:#7a9b6e;  /* verde musgo - poleas */
+    --tendon:#b5673a; /* tendon */
+    --joint:#6e8fa3;  /* articular - azul piedra */
+    --bone:#a3946e;   /* oseo */
+    --danger:#c25c4e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, #2a251d 0%, transparent 50%),
+      var(--bg);
+    color:var(--chalk);
+    font-family:'Courier New',ui-monospace,monospace;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  header{
+    border-bottom:2px solid var(--line);
+    padding-bottom:18px;
+    margin-bottom:22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  h1{
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    margin:0;
+    color:var(--chalk);
+  }
+  h1 span{color:var(--hold);}
+  .sub{color:var(--chalk-dim);font-size:12.5px;margin-top:4px;}
+  .grade{
+    font-size:11px;
+    color:var(--chalk-dim);
+    text-align:right;
+    line-height:1.5;
+    border-left:1px solid var(--line);
+    padding-left:14px;
+  }
+  .filters{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .chip{
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--chalk-dim);
+    padding:6px 13px;
+    border-radius:3px;
+    font-size:12px;
+    cursor:pointer;
+    font-family:inherit;
+    letter-spacing:0.3px;
+    transition:all .15s;
+  }
+  .chip:hover{border-color:var(--chalk-dim);color:var(--chalk);}
+  .chip.active{background:var(--chalk);color:var(--bg);border-color:var(--chalk);font-weight:bold;}
+
+  .card{
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:4px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:13px 16px;
+    cursor:pointer;
+    border-left:4px solid var(--tag-color,var(--chalk-dim));
+  }
+  .card-head:hover{background:#2a2620;}
+  .idx{
+    font-size:11px;
+    color:var(--chalk-dim);
+    min-width:20px;
+  }
+  .card-title{
+    font-family:Georgia,serif;
+    font-size:16px;
+    font-weight:700;
+    flex:1;
+    min-width:180px;
+  }
+  .tag{
+    font-size:9.5px;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    padding:3px 8px;
+    border-radius:2px;
+    background:var(--tag-color,var(--line));
+    color:#1c1a17;
+    font-weight:bold;
+  }
+  .mech{
+    font-size:11.5px;
+    color:var(--chalk-dim);
+    flex-basis:100%;
+    padding-left:32px;
+    margin-top:-2px;
+  }
+  .arrow{color:var(--chalk-dim);font-size:12px;transition:transform .2s;}
+  .card.open .arrow{transform:rotate(90deg);}
+  .body{
+    display:none;
+    border-top:1px solid var(--line);
+  }
+  .card.open .body{display:grid;}
+  .body{grid-template-columns:1fr 1fr;}
+  @media(max-width:760px){.body{grid-template-columns:1fr;}}
+  .col{padding:15px 18px;}
+  .col + .col{border-left:1px solid var(--line);}
+  @media(max-width:760px){.col+.col{border-left:none;border-top:1px solid var(--line);}}
+  .col h4{
+    margin:0 0 8px;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color:var(--tag-color,var(--chalk-dim));
+  }
+  .col ul{margin:0;padding-left:16px;font-size:12.8px;line-height:1.65;color:var(--chalk);}
+  .col li{margin-bottom:4px;}
+  .col li::marker{color:var(--chalk-dim);}
+  .note{
+    margin-top:10px;
+    font-size:11.5px;
+    color:var(--chalk-dim);
+    border-top:1px dashed var(--line);
+    padding-top:8px;
+    font-style:italic;
+  }
+  footer{
+    margin-top:30px;
+    font-size:11px;
+    color:var(--chalk-dim);
+    text-align:center;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Dedo del <span>Escalador</span> — Dx Diferencial</h1>
+      <div class="sub">Dolor digital en escalador · evaluación clínica + tratamiento kinésico por entidad</div>
+    </div>
+    <div class="grade">CRIMP = agarre cerrado<br>OPEN HAND = agarre abierto<br>7 entidades clínicas</div>
+  </header>
+
+  <div class="filters" id="filters"></div>
+
+  <div id="cards"></div>
+
+  <footer>Herramienta de apoyo clínico — no reemplaza el razonamiento diagnóstico ni la imagen cuando esté indicada.</footer>
+</div>
+
+<script>
+const DATA = [
+  {
+    tag:"POLEA", color:"#7a9b6e",
+    title:"Lesión de poleas (A2 / A4)",
+    mech:"Crimping (agarre cerrado) con carga súbita · sensación de \"pop\" o chasquido · dolor volar puntual",
+    eval:[
+      "Palpación puntual sobre la polea (A2: falange proximal / A4: falange media)",
+      "Buscar bowstringing (efecto cuerda de arco) en flexión resistida",
+      "Test comparativo: dolor en posición crimp vs. ausencia de dolor en open hand → muy sugestivo",
+      "Edema localizado en cara volar del dedo",
+      "Clasificar según Schöffl (I–IV) para definir conducta",
+      "Si sospecha de rotura completa (bowstringing evidente) → derivar a ecografía dinámica"
+    ],
+    tto:[
+      "Grado I-II: reposo relativo de la escalada 2-4 sem, taping en H o de protección (no anular clásico)",
+      "Movilidad activa libre de dolor, crioterapia en fase aguda",
+      "Fortalecimiento progresivo isométrico → isotónico de flexores una vez sin dolor",
+      "Reintroducción gradual a la pared: open hand antes que crimp",
+      "Grado III-IV: inmovilización con férula + derivación a evaluación quirúrgica",
+      "Taping de protección al retorno deportivo por 3-6 meses"
+    ],
+    note:"El taping NO previene la rotura, solo da propiocepción y contención — no generar falsa seguridad en el paciente."
+  },
+  {
+    tag:"TENDÓN", color:"#b5673a",
+    title:"Tendinopatía / tenosinovitis flexora (FDP–FDS)",
+    mech:"Sobreuso, dolor difuso e insidioso en trayecto volar, sin evento agudo claro",
+    eval:[
+      "Palpación a lo largo de la vaina flexora (no puntual como en polea)",
+      "Dolor a flexión resistida en todo el trayecto",
+      "Test de flexión activa aislada FDP (bloqueando IFP) y FDS (bloqueando dedos vecinos)",
+      "Descartar dedo en gatillo: crepitación o bloqueo en flexo-extensión"
+    ],
+    tto:[
+      "Fase aguda: descarga relativa, crioterapia, evitar crimp",
+      "Trabajo excéntrico/isométrico progresivo de flexores (protocolo tipo tendinopatía)",
+      "Deslizamiento tendinoso (tendon gliding) diferenciando FDS/FDP",
+      "Reeducación técnica de agarre: priorizar open hand sobre crimp",
+      "Progresión de carga con dinamómetro o hangboard controlado antes de volver a pared"
+    ]
+  },
+  {
+    tag:"LIGAMENTO", color:"#6e8fa3",
+    title:"Esguince ligamento colateral (IFP)",
+    mech:"Torsión o carga lateral — típico en movimientos dinámicos o al resbalar de una presa",
+    eval:[
+      "Test de estrés en varo/valgo en IFP a 0° y 30° de flexión",
+      "Comparar laxitud con dedo contralateral homólogo",
+      "Dolor puntual en inserción del colateral (más frecuente el radial)",
+      "Evaluar estabilidad activa vs. pasiva"
+    ],
+    tto:[
+      "Grado I-II: buddy taping (sindactilia) con dedo vecino 2-3 semanas",
+      "Movilidad activa temprana protegida para evitar rigidez",
+      "Fortalecimiento intrínseco y de pinza una vez estable",
+      "Grado III (inestabilidad franca): derivar para evaluación de reparación quirúrgica",
+      "Trabajo propioceptivo específico de la mano antes de reintroducir carga en pared"
+    ]
+  },
+  {
+    tag:"CÁPSULA", color:"#6e8fa3",
+    title:"Lesión de placa volar (IFP)",
+    mech:"Hiperextensión forzada — mal agarre de presa o caída con el dedo enganchado",
+    eval:[
+      "Test de hiperextensión pasiva de IFP (dolor / inestabilidad)",
+      "Palpación volar de la articulación IFP",
+      "Buscar deformidad en boutonnière si es crónico o no tratado",
+      "Evaluar déficit de extensión activa"
+    ],
+    tto:[
+      "Férula bloqueando hiperextensión (dorsal block) 10-15° de flexión, 2-3 semanas",
+      "Movilidad activa en flexión permitida desde el inicio (evita rigidez)",
+      "Progresión gradual de extensión activa según tolerancia",
+      "Fortalecimiento de intrínsecos y reeducación de pinza fina",
+      "Si deformidad estructurada (boutonnière establecido) → derivar a mano/cirugía"
+    ]
+  },
+  {
+    tag:"ARTICULAR", color:"#a3946e",
+    title:"Artrosis interfalángica (IFD > IFP)",
+    mech:"Escalador crónico, años de práctica, dolor insidioso, rigidez matutina, sin trauma agudo",
+    eval:[
+      "Inspección: nódulos de Heberden (IFD) o Bouchard (IFP)",
+      "ROM activo y pasivo — limitación y crepitación",
+      "Comparar con dedos contralaterales o menos cargados",
+      "Descartar componente inflamatorio agudo sobreañadido"
+    ],
+    tto:[
+      "Educación en dosificación de carga (no eliminar escalada, sí modular volumen/intensidad)",
+      "Movilidad activa diaria + trabajo de deslizamiento articular suave",
+      "Fortalecimiento intrínseco sin dolor, evitar posiciones de crimp extremo sostenido",
+      "Calor previo a la actividad, crioterapia post-sobrecarga",
+      "Adaptación técnica: priorizar open hand y variar tipos de presa"
+    ]
+  },
+  {
+    tag:"LUMBRICAL", color:"#7a9b6e",
+    title:"Lesión lumbrical",
+    mech:"Pocket pulling (agarre en oquedades pequeñas con 1-2 dedos)",
+    eval:[
+      "Dolor referido en la palma, NO en el dedo — clave preguntar localización exacta",
+      "Test de resistencia con MCF flexionada e IFP extendida",
+      "Palpación en región palmar proximal al dedo afectado",
+      "Diferenciar de origen tendinoso por la localización más proximal y palmar"
+    ],
+    tto:[
+      "Reposo relativo de agarres en pocket 2-3 semanas",
+      "Trabajo isométrico progresivo en la posición específica de función lumbrical",
+      "Reeducación de patrón de agarre, evitar pockets de 1-2 dedos en fase de retorno",
+      "Fortalecimiento global de intrínsecos antes de reexposición específica"
+    ]
+  },
+  {
+    tag:"ÓSEO", color:"#c25c4e",
+    title:"Fractura de estrés / avulsión ósea",
+    mech:"Dolor óseo puntual persistente, no cede con reposo relativo, carga repetitiva o pico de entrenamiento",
+    eval:[
+      "Palpación ósea directa vs. tejido blando circundante",
+      "Dolor a la percusión axial del dedo",
+      "Si sospecha → derivar a Rx; si Rx negativa y clínica persiste → RMN",
+      "Descartar avulsión en inserciones tendinosas (base falange)"
+    ],
+    tto:[
+      "Derivación a diagnóstico por imagen ANTES de definir conducta kinésica activa",
+      "Fase de consolidación: inmovilización/protección según indicación médica",
+      "Una vez confirmada consolidación: movilidad progresiva y fortalecimiento gradual",
+      "Retorno deportivo en fases, con reintroducción de carga de impacto/crimp al final"
+    ],
+    note:"Esta es la única entidad donde la imagen condiciona el inicio del tratamiento activo — no avanzar carga sin confirmación."
+  }
+];
+
+const filters = document.getElementById('filters');
+const cardsEl = document.getElementById('cards');
+let activeTag = null;
+
+const tags = [...new Set(DATA.map(d=>d.tag))];
+function renderFilters(){
+  filters.innerHTML = '';
+  const allChip = document.createElement('button');
+  allChip.className = 'chip' + (activeTag===null?' active':'');
+  allChip.textContent = 'TODAS';
+  allChip.onclick = ()=>{activeTag=null; renderFilters(); renderCards();};
+  filters.appendChild(allChip);
+  tags.forEach(t=>{
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (activeTag===t?' active':'');
+    chip.textContent = t;
+    chip.onclick = ()=>{activeTag = (activeTag===t?null:t); renderFilters(); renderCards();};
+    filters.appendChild(chip);
+  });
+}
+
+function renderCards(){
+  cardsEl.innerHTML = '';
+  DATA.forEach((d,i)=>{
+    if(activeTag && d.tag!==activeTag) return;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--tag-color', d.color);
+
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="idx">${String(i+1).padStart(2,'0')}</div>
+        <div class="card-title">${d.title}</div>
+        <div class="tag">${d.tag}</div>
+        <div class="arrow">▶</div>
+        <div class="mech">${d.mech}</div>
+      </div>
+      <div class="body">
+        <div class="col">
+          <h4>Evaluación clínica</h4>
+          <ul>${d.eval.map(e=>`<li>${e}</li>`).join('')}</ul>
+        </div>
+        <div class="col">
+          <h4>Tratamiento kinésico</h4>
+          <ul>${d.tto.map(t=>`<li>${t}</li>`).join('')}</ul>
+          ${d.note ? `<div class="note">${d.note}</div>` : ''}
+        </div>
+      </div>
+    `;
+    card.querySelector('.card-head').addEventListener('click', ()=>{
+      card.classList.toggle('open');
+    });
+    cardsEl.appendChild(card);
+  });
+}
+
+renderFilters();
+renderCards();
+</script>
+</body>
+</html>
